@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { PlaylistPlayer } from './components/PlaylistPlayer';
-import { usePlaylistScheduler } from './hooks/usePlaylistScheduler';
-import { LoadingScreen } from './components/LoadingScreen';
-import { ErrorScreen } from './components/ErrorScreen';
-import { DeviceIdentifier } from './components/DeviceIdentifier';
-import { fetchActivePlaylist } from './services/api';
-import { IPlaylist } from './types';
+import React, { useEffect, useState } from "react";
+import { PlaylistPlayer } from "./components/PlaylistPlayer";
+import { usePlaylistScheduler } from "./hooks/usePlaylistScheduler";
+import { LoadingScreen } from "./components/LoadingScreen";
+import { ErrorScreen } from "./components/ErrorScreen";
+import { DeviceIdentifier } from "./components/DeviceIdentifier";
+import { fetchActivePlaylist } from "./services/api";
+import { IPlaylist } from "./types";
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -15,12 +15,13 @@ function App() {
 
   // Load or generate a unique device identifier
   useEffect(() => {
-    const storedDeviceId = localStorage.getItem('deviceId');
+    const storedDeviceId = localStorage.getItem("deviceId");
+
     if (storedDeviceId) {
       setDeviceId(storedDeviceId);
     } else {
       const newDeviceId = `tv-${Math.random().toString(36).substring(2, 9)}`;
-      localStorage.setItem('deviceId', newDeviceId);
+      localStorage.setItem("deviceId", newDeviceId);
       setDeviceId(newDeviceId);
     }
   }, []);
@@ -36,12 +37,13 @@ function App() {
       try {
         setLoading(true);
         // We prioritize scheduled playlists if available
-        const playlist = scheduledPlaylist || await fetchActivePlaylist(deviceId);
+        const playlist =
+          scheduledPlaylist || (await fetchActivePlaylist(deviceId));
         setActivePlaylist(playlist);
         setError(null);
       } catch (err) {
-        console.error('Failed to load playlist:', err);
-        setError('Failed to load content. Please check your connection.');
+        console.error("Failed to load playlist:", err);
+        setError("Failed to load content. Please check your connection.");
       } finally {
         setLoading(false);
       }
@@ -62,7 +64,7 @@ function App() {
           await document.documentElement.requestFullscreen();
         }
       } catch (err) {
-        console.warn('Could not enter fullscreen mode:', err);
+        console.warn("Could not enter fullscreen mode:", err);
       }
     };
 
@@ -70,16 +72,16 @@ function App() {
     const handleUserInteraction = () => {
       requestFullscreen();
       // Remove event listeners after fullscreen is requested
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('keydown', handleUserInteraction);
+      document.removeEventListener("click", handleUserInteraction);
+      document.removeEventListener("keydown", handleUserInteraction);
     };
 
-    document.addEventListener('click', handleUserInteraction);
-    document.addEventListener('keydown', handleUserInteraction);
+    document.addEventListener("click", handleUserInteraction);
+    document.addEventListener("keydown", handleUserInteraction);
 
     return () => {
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('keydown', handleUserInteraction);
+      document.removeEventListener("click", handleUserInteraction);
+      document.removeEventListener("keydown", handleUserInteraction);
     };
   }, []);
 
@@ -88,7 +90,7 @@ function App() {
   }
 
   if (error || !activePlaylist) {
-    return <ErrorScreen message={error || 'No active playlist found'} />;
+    return <ErrorScreen message={error || "No active playlist found"} />;
   }
 
   return (
