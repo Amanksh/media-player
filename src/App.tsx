@@ -53,7 +53,7 @@ function App() {
     const intervalId = setInterval(loadData, 5 * 60 * 1000);
     return () => clearInterval(intervalId);
   }, [deviceId]);
-
+  console.log("activePlaylist", activePlaylist);
   // Request fullscreen when loaded
   useEffect(() => {
     const requestFullscreen = async () => {

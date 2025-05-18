@@ -12,6 +12,7 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
   asset,
   onStatusChange,
 }) => {
+  console.log("asset", asset);
   const [status, setStatus] = useState<MediaStatus>("loading");
   const playerRef = useRef<ReactPlayer | null>(null);
   const { type, url } = asset.assetId;

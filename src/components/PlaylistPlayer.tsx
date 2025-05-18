@@ -78,7 +78,7 @@ export const PlaylistPlayer: React.FC<PlaylistPlayerProps> = ({ playlist }) => {
     ) {
       const timer = setTimeout(() => {
         advanceToNextAsset();
-      }, currentAsset.duration * 1000);
+      }, currentAsset.duration * 10000);
 
       return () => {
         clearTimeout(timer);
