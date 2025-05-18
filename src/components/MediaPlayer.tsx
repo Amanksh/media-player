@@ -1,21 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
-import ReactPlayer from 'react-player';
-import { IAssetItem, MediaStatus } from '../types';
-import { IframePlayer } from './IframePlayer';
+import React, { useState, useEffect, useRef } from "react";
+import ReactPlayer from "react-player";
+import { IAssetItem, MediaStatus } from "../types";
+import { IframePlayer } from "./IframePlayer";
 
 interface MediaPlayerProps {
   asset: IAssetItem;
   onStatusChange: (status: MediaStatus) => void;
 }
 
-export const MediaPlayer: React.FC<MediaPlayerProps> = ({ 
-  asset, 
-  onStatusChange 
+export const MediaPlayer: React.FC<MediaPlayerProps> = ({
+  asset,
+  onStatusChange,
 }) => {
-  const [status, setStatus] = useState<MediaStatus>('loading');
+  const [status, setStatus] = useState<MediaStatus>("loading");
   const playerRef = useRef<ReactPlayer | null>(null);
   const { type, url } = asset.assetId;
-  
+
   // Update parent component when status changes
   useEffect(() => {
     onStatusChange(status);
@@ -23,55 +23,81 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
 
   // Handle image loading
   const handleImageLoad = () => {
-    setStatus('playing');
+    setStatus("playing");
   };
 
   // Handle image error
   const handleImageError = () => {
     console.error(`Failed to load image: ${url}`);
-    setStatus('error');
+    setStatus("error");
   };
 
   // Handle video events
   const handleVideoReady = () => {
-    setStatus('playing');
+    setStatus("playing");
+
+    if (playerRef.current) {
+      const video = playerRef.current.getInternalPlayer();
+
+      // Ensure video doesn't loop
+      video.loop = false;
+
+      // Add ended event listener
+      video.addEventListener("ended", () => {
+        setStatus("finished");
+      });
+
+      // Add error event listener
+      video.addEventListener("error", (e: Event) => {
+        setStatus("error");
+      });
+
+      // Add timeupdate listener to check duration
+      video.addEventListener("timeupdate", () => {
+        if (video.currentTime >= video.duration - 0.1) {
+          setStatus("finished");
+        }
+      });
+
+      // Start playing
+      video.play().catch((error: Error) => {});
+    }
   };
 
-  const handleVideoError = () => {
-    console.error(`Failed to load video: ${url}`);
-    setStatus('error');
+  const handleVideoError = (error: any) => {
+    setStatus("error");
   };
 
   const handleVideoEnded = () => {
-    setStatus('finished');
+    setStatus("finished");
   };
 
   // Handle URL/iframe events
   const handleIframeLoad = () => {
-    setStatus('playing');
+    setStatus("playing");
   };
 
   const handleIframeError = () => {
     console.error(`Failed to load URL: ${url}`);
-    setStatus('error');
+    setStatus("error");
   };
 
   // Render appropriate media based on type
   switch (type) {
-    case 'IMAGE':
+    case "IMAGE":
       return (
         <div className="w-full h-full flex items-center justify-center bg-black">
-          <img 
-            src={url} 
-            alt={asset.assetId.name || 'Digital signage content'}
+          <img
+            src={url}
+            alt={asset.assetId.name || "Digital signage content"}
             className="max-w-full max-h-full object-contain"
             onLoad={handleImageLoad}
             onError={handleImageError}
           />
         </div>
       );
-      
-    case 'VIDEO':
+
+    case "VIDEO":
       return (
         <div className="w-full h-full bg-black">
           <ReactPlayer
@@ -80,39 +106,59 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
             width="100%"
             height="100%"
             playing
-            loop={false}
-            muted={false}
+            playsinline
+            muted={true}
             controls={false}
+            loop={false}
             onReady={handleVideoReady}
             onError={handleVideoError}
             onEnded={handleVideoEnded}
-            style={{ backgroundColor: '#000' }}
+            onProgress={({ played }) => {
+              if (played >= 0.99) {
+                setStatus("finished");
+              }
+            }}
+            style={{ backgroundColor: "#000" }}
             config={{
               file: {
                 attributes: {
                   style: {
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain'
-                  }
-                }
-              }
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "contain",
+                  },
+                },
+                forceVideo: true,
+                forceHLS: false,
+                hlsOptions: {
+                  enableWorker: true,
+                  debug: false,
+                  xhrSetup: (xhr: XMLHttpRequest) => {
+                    xhr.withCredentials = false;
+                  },
+                },
+              },
             }}
+            fallback={
+              <div className="w-full h-full flex items-center justify-center bg-black text-white">
+                <p>Loading video...</p>
+              </div>
+            }
           />
         </div>
       );
-      
-    case 'URL':
-    case 'HTML':
+
+    case "URL":
+    case "HTML":
       return (
-        <IframePlayer 
-          url={url} 
+        <IframePlayer
+          url={url}
           onLoad={handleIframeLoad}
           onError={handleIframeError}
-          title={asset.assetId.name || 'Web content'}
+          title={asset.assetId.name || "Web content"}
         />
       );
-      
+
     default:
       return (
         <div className="w-full h-full flex items-center justify-center bg-black text-white">

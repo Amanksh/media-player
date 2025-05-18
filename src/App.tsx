@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { PlaylistPlayer } from "./components/PlaylistPlayer";
-import { usePlaylistScheduler } from "./hooks/usePlaylistScheduler";
+
 import { LoadingScreen } from "./components/LoadingScreen";
 import { ErrorScreen } from "./components/ErrorScreen";
 import { DeviceIdentifier } from "./components/DeviceIdentifier";
@@ -27,7 +27,6 @@ function App() {
   }, []);
 
   // Use our custom hook to get the currently scheduled playlist
-  const scheduledPlaylist = usePlaylistScheduler();
 
   // Fetch active playlist data
   useEffect(() => {
@@ -37,8 +36,7 @@ function App() {
       try {
         setLoading(true);
         // We prioritize scheduled playlists if available
-        const playlist =
-          scheduledPlaylist || (await fetchActivePlaylist(deviceId));
+        const playlist = await fetchActivePlaylist(deviceId);
         setActivePlaylist(playlist);
         setError(null);
       } catch (err) {
@@ -54,7 +52,7 @@ function App() {
     // Refresh content every 5 minutes
     const intervalId = setInterval(loadData, 5 * 60 * 1000);
     return () => clearInterval(intervalId);
-  }, [deviceId, scheduledPlaylist]);
+  }, [deviceId]);
 
   // Request fullscreen when loaded
   useEffect(() => {

@@ -43,13 +43,25 @@ export const PlaylistPlayer: React.FC<PlaylistPlayerProps> = ({ playlist }) => {
   const handleMediaStatusChange = useCallback(
     (status: MediaStatus, assetId: string) => {
       if (status === "playing" && deviceId) {
-        logPlaybackEvent(deviceId, playlist._id, assetId, "start");
+        try {
+          logPlaybackEvent(deviceId, playlist._id, assetId, "start");
+        } catch (error) {}
       } else if (status === "finished" && deviceId) {
-        logPlaybackEvent(deviceId, playlist._id, assetId, "complete");
-        advanceToNextAsset();
+        try {
+          logPlaybackEvent(deviceId, playlist._id, assetId, "complete");
+        } catch (error) {}
+        // Ensure we advance to next asset
+        setTimeout(() => {
+          advanceToNextAsset();
+        }, 100);
       } else if (status === "error" && deviceId) {
-        logPlaybackEvent(deviceId, playlist._id, assetId, "error");
-        advanceToNextAsset(); // Skip errored content
+        try {
+          logPlaybackEvent(deviceId, playlist._id, assetId, "error");
+        } catch (error) {}
+        // Ensure we advance to next asset
+        setTimeout(() => {
+          advanceToNextAsset();
+        }, 100);
       }
     },
     [advanceToNextAsset, deviceId, playlist._id]
@@ -59,16 +71,18 @@ export const PlaylistPlayer: React.FC<PlaylistPlayerProps> = ({ playlist }) => {
   useEffect(() => {
     if (!currentAsset) return;
 
-    // Only set timer for images; videos will advance on completion
+    // Only set timer for images and URLs; videos will advance on completion
     if (
       currentAsset.assetId.type === "IMAGE" ||
       currentAsset.assetId.type === "URL"
     ) {
       const timer = setTimeout(() => {
         advanceToNextAsset();
-      }, 5000);
+      }, currentAsset.duration * 1000);
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+      };
     }
   }, [currentAsset, advanceToNextAsset]);
 
