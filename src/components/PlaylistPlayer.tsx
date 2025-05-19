@@ -28,14 +28,14 @@ export const PlaylistPlayer: React.FC<PlaylistPlayerProps> = ({ playlist }) => {
 
   // Function to advance to the next asset
   const advanceToNextAsset = useCallback(() => {
-    setIsTransitioning(true);
+    // setIsTransitioning(true);
 
     // Short timeout for transition effect
     setTimeout(() => {
       setCurrentIndex((prevIndex) =>
         prevIndex === sortedItems.length - 1 ? 0 : prevIndex + 1
       );
-      setIsTransitioning(false);
+      // setIsTransitioning(false);
     }, 500); // 500ms transition
   }, [sortedItems.length]);
 
@@ -78,7 +78,7 @@ export const PlaylistPlayer: React.FC<PlaylistPlayerProps> = ({ playlist }) => {
     ) {
       const timer = setTimeout(() => {
         advanceToNextAsset();
-      }, currentAsset.duration * 10000);
+      }, currentAsset.duration * 1000);
 
       return () => {
         clearTimeout(timer);
