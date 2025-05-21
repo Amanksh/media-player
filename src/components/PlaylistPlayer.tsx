@@ -8,7 +8,6 @@ interface PlaylistPlayerProps {
 
 export const PlaylistPlayer: React.FC<PlaylistPlayerProps> = ({ playlist }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-
   const [deviceId, setDeviceId] = useState<string>("");
 
   // Get device ID from local storage
@@ -24,70 +23,55 @@ export const PlaylistPlayer: React.FC<PlaylistPlayerProps> = ({ playlist }) => {
 
   // Get current asset
   const currentAsset = sortedItems[currentIndex];
-  console.log(currentAsset);
+
   // Function to advance to the next asset
   const advanceToNextAsset = useCallback(() => {
-    // setIsTransitioning(true);
-
-    // Short timeout for transition effect
-    setTimeout(() => {
-      setCurrentIndex((prevIndex) =>
-        prevIndex === sortedItems.length - 1 ? 0 : prevIndex + 1
-      );
-      // setIsTransitioning(false);
-    }, 100); // 500ms transition
+    setCurrentIndex((prevIndex) =>
+      prevIndex === sortedItems.length - 1 ? 0 : prevIndex + 1
+    );
   }, [sortedItems.length]);
 
   // Handle media status changes
   const handleMediaStatusChange = useCallback(
-    (status: MediaStatus, currentAsset: IAssetItem) => {
-      if (currentAsset.assetId.type === "VIDEO" && status === "finished") {
-        advanceToNextAsset();
-        return;
-      }
+    (status: MediaStatus) => {
       if (status === "playing" && deviceId) {
         try {
           // logPlaybackEvent(deviceId, playlist._id, assetId, "start");
         } catch (error) {}
-      } else if (status === "finished" && deviceId) {
+      } else if (status === "finished") {
         try {
           // logPlaybackEvent(deviceId, playlist._id, assetId, "complete");
         } catch (error) {}
-        // Ensure we advance to next asset
-        setTimeout(() => {
-          advanceToNextAsset();
-        }, currentAsset.duration * 1000);
-      } else if (status === "error" && deviceId) {
+        advanceToNextAsset();
+      } else if (status === "error") {
         try {
           // logPlaybackEvent(deviceId, playlist._id, assetId, "error");
         } catch (error) {}
-        // Ensure we advance to next asset
-        setTimeout(() => {
-          advanceToNextAsset();
-        }, currentAsset.duration * 1000);
+        advanceToNextAsset();
       }
     },
     [advanceToNextAsset, deviceId, playlist._id]
   );
 
-  // // Set up timer for image assets
-  // useEffect(() => {
-  //   if (!currentAsset) return;
+  // Set up timer for image assets
+  useEffect(() => {
+    if (!currentAsset) return;
 
-  //   // Only set timer for images and URLs; videos will advance on completion
-  //   if (
-  //     currentAsset.assetId.type === "IMAGE" ||
-  //     currentAsset.assetId.type === "URL"
-  //   ) {
-  //     const timer = setTimeout(() => {
-  //       advanceToNextAsset();
-  //     }, currentAsset.duration * 1000);
+    // Only set timer for images and URLs; videos will advance on completion
+    if (
+      currentAsset.assetId.type === "IMAGE" ||
+      currentAsset.assetId.type === "URL" ||
+      currentAsset.assetId.type === "HTML"
+    ) {
+      const timer = setTimeout(() => {
+        advanceToNextAsset();
+      }, currentAsset.duration * 1000);
 
-  //     return () => {
-  //       clearTimeout(timer);
-  //     };
-  //   }
-  // }, [currentAsset]);
+      return () => {
+        clearTimeout(timer);
+      };
+    }
+  }, [currentAsset, advanceToNextAsset]);
 
   if (!currentAsset) {
     return (
@@ -98,14 +82,10 @@ export const PlaylistPlayer: React.FC<PlaylistPlayerProps> = ({ playlist }) => {
   }
 
   return (
-    <div
-      className={`w-full h-full transition-opacity duration-500 ease-in-out `}
-    >
+    <div className="w-full h-full transition-opacity duration-500 ease-in-out">
       <MediaPlayer
         asset={currentAsset}
-        onStatusChange={(status) =>
-          handleMediaStatusChange(status, currentAsset)
-        }
+        onStatusChange={handleMediaStatusChange}
       />
     </div>
   );
