@@ -138,6 +138,19 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
                   },
                 },
               },
+              youtube: {
+                playerVars: {
+                  autoplay: 1,
+                  controls: 0,
+                  disablekb: 1,
+                  fs: 0,
+                  modestbranding: 1,
+                  playsinline: 1,
+                  rel: 0,
+                  showinfo: 0,
+                  mute: 1,
+                },
+              },
             }}
             fallback={
               <div className="w-full h-full flex items-center justify-center bg-black text-white">
