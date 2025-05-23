@@ -71,6 +71,14 @@ export const PlaylistPlayer: React.FC<PlaylistPlayerProps> = ({ playlist }) => {
         clearTimeout(timer);
       };
     }
+    if (currentAsset.assetId.type === "VIDEO" && currentAsset.duration !== 1) {
+      const timer = setTimeout(() => {
+        advanceToNextAsset();
+      }, currentAsset.duration * 1000);
+      return () => {
+        clearTimeout(timer);
+      };
+    }
   }, [currentAsset, advanceToNextAsset]);
 
   if (!currentAsset) {
