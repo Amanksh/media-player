@@ -71,11 +71,17 @@ export const PlaylistPlayer: React.FC<PlaylistPlayerProps> = ({ playlist }) => {
         clearTimeout(timer);
       };
     }
-    if (currentAsset.assetId.type === "VIDEO" && currentAsset.duration !== 1) {
-      console.log("VIDEO", currentAsset.duration);
+
+    // For videos with custom duration (not 1 second)
+    if (
+      currentAsset.assetId.type === "VIDEO" &&
+      currentAsset.duration &&
+      Number(currentAsset.duration) !== 1
+    ) {
       const timer = setTimeout(() => {
         advanceToNextAsset();
-      }, currentAsset.duration * 1000);
+      }, Number(currentAsset.duration) * 1000);
+
       return () => {
         clearTimeout(timer);
       };

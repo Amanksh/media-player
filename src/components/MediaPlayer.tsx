@@ -14,7 +14,17 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
 }) => {
   const [status, setStatus] = useState<MediaStatus>("loading");
   const playerRef = useRef<ReactPlayer | null>(null);
+  const durationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { type, url } = asset.assetId;
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (durationTimerRef.current) {
+        clearTimeout(durationTimerRef.current);
+      }
+    };
+  }, []);
 
   // Update parent component when status changes
   useEffect(() => {
@@ -50,13 +60,6 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
       // Add error event listener
       video.addEventListener("error", (e: Event) => {
         setStatus("error");
-      });
-
-      // Add timeupdate listener to check duration
-      video.addEventListener("timeupdate", () => {
-        if (video.currentTime >= video.duration - 0.1) {
-          setStatus("finished");
-        }
       });
 
       // Start playing
@@ -114,8 +117,29 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
             onError={handleVideoError}
             onEnded={handleVideoEnded}
             onProgress={({ played }) => {
-              if (played >= 0.99) {
-                setStatus("finished");
+              // Only check progress if there's no custom duration
+              if (!asset.duration || Number(asset.duration) === 1) {
+                if (played >= 0.99) {
+                  setStatus("finished");
+                }
+              }
+            }}
+            onDuration={(duration) => {
+              // Clear any existing timer
+              if (durationTimerRef.current) {
+                clearTimeout(durationTimerRef.current);
+              }
+
+              // If the asset has a custom duration, set a timer
+              if (asset.duration && Number(asset.duration) !== 1) {
+                console.log(
+                  "Setting custom duration timer:",
+                  asset.duration,
+                  "seconds"
+                );
+                durationTimerRef.current = setTimeout(() => {
+                  setStatus("finished");
+                }, Number(asset.duration) * 1000);
               }
             }}
             style={{ backgroundColor: "#000" }}
