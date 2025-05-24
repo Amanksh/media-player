@@ -64,9 +64,13 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
       });
 
       // Start playing
-      video.play().catch((error: Error) => {
-        console.error("Error playing video:", error);
-      });
+      if (isYouTube) {
+        video.playVideo();
+      } else {
+        video.play().catch((error: Error) => {
+          console.error("Error playing video:", error);
+        });
+      }
     }
   };
 
@@ -187,6 +191,11 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
                   host: "https://www.youtube-nocookie.com",
                 },
               },
+            }}
+            onReady={(player) => {
+              if (isYouTube) {
+                player.getInternalPlayer().playVideo();
+              }
             }}
             fallback={
               <div className="w-full h-full flex items-center justify-center bg-black text-white">
