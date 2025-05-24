@@ -192,11 +192,6 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
                 },
               },
             }}
-            onReady={(player) => {
-              if (isYouTube) {
-                player.getInternalPlayer().playVideo();
-              }
-            }}
             fallback={
               <div className="w-full h-full flex items-center justify-center bg-black text-white">
                 <p>Loading video...</p>
