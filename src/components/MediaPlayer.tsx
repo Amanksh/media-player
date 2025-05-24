@@ -16,6 +16,7 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
   const playerRef = useRef<ReactPlayer | null>(null);
   const durationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { type, url } = asset.assetId;
+  const isYouTube = url.includes("youtube.com") || url.includes("youtu.be");
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -63,11 +64,14 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
       });
 
       // Start playing
-      video.play().catch((error: Error) => {});
+      video.play().catch((error: Error) => {
+        console.error("Error playing video:", error);
+      });
     }
   };
 
   const handleVideoError = (error: any) => {
+    console.error("Video error:", error);
     setStatus("error");
   };
 
@@ -108,8 +112,8 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
             url={url}
             width="100%"
             height="100%"
-            playing
-            playsinline
+            playing={true}
+            playsinline={true}
             muted={true}
             controls={false}
             loop={false}
@@ -173,6 +177,14 @@ export const MediaPlayer: React.FC<MediaPlayerProps> = ({
                   rel: 0,
                   showinfo: 0,
                   mute: 1,
+                  origin: window.location.origin,
+                  enablejsapi: 1,
+                  iv_load_policy: 3,
+                  cc_load_policy: 0,
+                  start: 0,
+                },
+                embedOptions: {
+                  host: "https://www.youtube-nocookie.com",
                 },
               },
             }}
